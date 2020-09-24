@@ -1,0 +1,330 @@
+---
+title: "Pset1"
+author: "Michael Denigris"
+date: "9/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(pacman)
+pacman::p_load(tidyverse, psych, dplyr)
+```
+
+# Q1
+
+## 1.8.1.1
+
+a) Variable. The concept constitutes a set with differing values (labor, republican, social democratic, etc.). This assumes the political convention is not a party convention; if it is,  and there are a negligible number of non-party members attending, it can be treated as a constant.
+
+b) Variable. War participation (perhaps in terms of conflicts/year) varies in accordance with factors we'd like to discover through analysis -- e.g. trade, power politics, etc. 
+
+c) Variable. The set of voting records contains differing values corresponding to the differing positions among the members of Congress. 
+
+d) Values of a variable, that (categorical) variable being "Revolutions". The set of such revolutions includes differing values, i.e. the values vary across the countries, and each depends on myriad additional variables.
+
+e) Constant. There is one unchanging value associated with the concept. The voter's choice is a fixed data point.
+
+f) Depends on empirical data. If the individual voted for the same party in every election between 1960-1992, the individual's vote choice can be treated as constant over that period. Otherwise, it must be treated as a variable.
+
+g) Variable. Assuming everyone in the country does not vote the same way, the set [Vote choice in the 1912 presidential election] contains differing values depending on the voter, in turn depending on numerable other variables.
+
+##1.8.1.2
+
+a) Value of variable. Perhaps that variable is "False_Flags_by_US_Military".
+
+b) Variable.
+
+c) (Very imprecise) value of a variable, economic class.
+
+d) Variable.
+
+e) Value of a variable, but only if what is meant is the US Republican Party; otherwise, variable (left republicans, classical rebublicans, Machiavellians, etc.)
+
+f) Value of a variable, sex.
+
+g) Value of a variable. Variable would be President_Action (w.r.t. a bill passed by Congress) with values [SIGN, VETO].
+
+h) Variable. Values might be: [Highly (ethnically) fractionalized, Somewhat fractionalized, Somewhat centralized, Highly Centralized].
+
+i) Variable. Values might be: [OCCURRED, DID NOT OCCUR] or [1, 0] for some given timeframe.
+
+
+##2.4.2.10.
+
+a) Latinos relative to all others means Latinos:(not)Latinos. This is
+
+```{r}
+105342/(32654 + 436756 + 62346 + 98642)
+```
+
+This reduces to 52671:315199, or 1:5.984, or ~.16 (there is a tradeoff of intuitive form for fractional human beings).
+
+The proportion of Latinos relative to all *others*, however, is nonsensical (to be a proportion of something you must be a part of it). I take this to indicate that the problem must mean the proportion of Latinos relative to the population. This is
+
+```{r}
+105342/(32654 + 436756 + 62346 + 98642 + 105342)
+```
+
+Which returns a result of .1432, or 14.32%. 
+
+b) Independent RVs relative to Republican RVs means Independent:Republican. This is 221:312, or
+
+```{r}
+221/312
+```
+
+The proportion of independents relative to the population of independents and republicans combined (def. of proportion of the two), a stat I have no idea why one would need, is
+
+```{r}
+221/(221+312)
+```
+
+This returns .415, or 41.5%. 
+
+c) Republican:Democrat is 312:432. This is
+
+```{r}
+312/432
+```
+
+Or about .72. The proportion is the number of Republican voters relative to the sum of the Republican and Democratic voters, or
+
+```{r}
+312/(432+312)
+```
+
+Or about .419. As a percentage, this is 41.9%. 
+
+##2.4.2.11
+
+The percentage change in the Latino population is given by the difference between the intial and final Latino populations, relative to the initial population:
+
+```{r}
+(150342-100322)/150342
+```
+
+The Latino population shrank by a factor of .3327, about 33%. 
+
+##2.4.2.12
+
+The percentage change in the *proportion* of Latinos to all others is the difference in the proportions before and after, over the proportion before, multiplied by 100. This is
+
+```{r}
+(((105342/(32654 + 436756 + 62346 + 98642 + 105342)) - (100322/(32654 + 436756 + 62346 + 98642 + 100322)))/(105342/(32654 + 436756 + 62346 + 98642 + 105342)))*100
+```
+
+The proportion of Latinos in the population decreased by 4.11%. I really ought to have used variables, but here we are.
+
+##2.4.2.13
+
+The percentage change is given by (62%-56%)/(56%) multiplied by 100, or
+
+```{r}
+(62-56)/56 * 100
+```
+
+The voter turnout increased by 10.714%. 
+
+##2.4.2.14
+
+18/12 can be reduced to 3/2. 
+
+#Q2 
+
+```{r}
+pacman::p_load("datasets")
+library(datasets)
+data("sleep") #Loads dataset within datasets package
+```
+
+To compare the amount of sleep each individual gained (or lost) on each respective drug, we can use the following:
+
+```{r}
+sleep %>% 
+  group_by(group) %>% 
+  summarize_at(vars(extra), mean)
+```
+The mean hours of sleep gained for drug 2 was 2.33, while drug 1 was only .75. From this basic test, and from the eye test of the sleep dataset (in which several participants experienced sleep *loss* from drug 1), I'd go with drug 2. 
+
+To represent this graphically, we could use two box plots, one for drug 1 and one for drug 2. We can overlay these onto the same graphic for clarity.
+
+## Country Rankings Data
+
+###1. 
+
+Let's clean up our data first.
+
+```{r}
+library(readxl)
+CountryRatings1973_2020 <- read_excel("/Users/michaeldenigris/Documents/student_materials_2020/problem_sets/ps1/CountryRatings1973-2020.xlsx", 
+    sheet = "Country Ratings, Statuses ", 
+    skip = 2) #This import function was generated by the manual import button on the GUI. Yet for some reason it won't execute; it throws up a 'no path' error. 
+  
+dummyPR <- CountryRatings1973_2020 %>% 
+  rename(Country = ...1 ) %>%  #For ease of reading, name first column "Country"
+    select(contains("Country") | contains("PR")) #Get the countries and PR scores and store them in a dummy variable
+
+dummyCL <- CountryRatings1973_2020 %>% 
+  rename(Country = ...1 ) %>%  #For ease of reading, name first column "Country"
+    select(contains("Country") | contains("CL")) #Get the countries and CL scores
+
+names(dummyPR) <- c("Country", sprintf("%d", 1973:2019)) #rename the PRs and CLs to their corresponding years
+names(dummyCL) <- c("Country", sprintf("%d", 1973:2019))
+
+gatheredPR <- gather(dummyPR, "Year", "PR", -1) %>% #Arrange by country
+  arrange(Country)
+
+gatheredCL <- gather(dummyCL, "Year", "CL", -1) %>% 
+  arrange(Country) %>% 
+    select(contains("CL")) #Arrange by country and select out only the CL column
+
+CountryYrData <- cbind(gatheredPR, gatheredCL) #Combine our intermediary dataframes
+
+CountryYrData$PR <- as.numeric(CountryYrData$PR) #Convert the scores to numeric values
+
+CountryYrData$CL <- as.numeric(CountryYrData$CL) 
+
+CountryYrSums <- mutate(CountryYrData, Score = PR + CL) #Add a column for the sum of scores to arrive at the score sums dataframe
+```
+
+The above code takes the Freedom House dataset and massages it into country-year format. Now we can start answering questions about the data.
+
+The number of countries in the dataset can be found using the following code:
+
+```{r}
+CountryList <- unique(CountryYrData[[1]])
+length(CountryList)
+```
+
+This counts the unique elements in column 1 of the dataset, which is the country column: 205. Note that this number changed over time in the dataset.
+
+The number of observations is simply the number of rows in our now-tidy dataframe: 9635. This is given by the following code:
+
+```{r}
+nrow(CountryYrData)
+```
+
+### 2
+
+We cannot count the number of countries who experienced declines in their combined scores over the period of 2010-2020 from the data we have (the last year surveyed was 2019, even though the last report was issued in 2020). Instead, I calculate over the period 2010-2019. 
+
+To do this, we need only compare the combined scores of each country in 2010 and 2019. If the difference between the two (2019 Score minus 2010 score) is positive (negative) for a given country, the score increased (decreased) over the period. 
+
+```{r}
+Nth.delete <- function(dataframe, n)dataframe[-(seq(n,to=nrow(dataframe),by=n)),] #Using a function a lovely user at StackExchange conjured up, we can slice off every other row to avoid counting differences between adjacent countries' scores in the grouped/filtered dataframe below.
+
+Score_Change <- CountryYrSums %>% #Let's make a table of all differences.
+  group_by(Country) %>% 
+    filter(Year == 2010 | Year == 2019) %>% #Filters out all years but those defining the interval
+      summarize(Score_Difference = diff(Score)) %>% 
+        Nth.delete(2) #Calls the above function and deletes every 2nd row starting with row 2. This ensures we don't get differences between countries.
+
+DiffTable <- as.data.frame(cbind(CountryList, Score_Change)) #A table of countries and their score differences from 2010-2019.
+
+filter(DiffTable, Score_Change < 0) #Give us all countries with a negative score change
+```
+
+From the above code we see that 34 countries saw a decrease in their score over the period 2010-2019.
+
+Table of 10 largest declines:
+
+```{r}
+filter(DiffTable, Score_Change < 0) %>%
+  arrange(desc(Score_Change)) %>% #Use descending to rank negative scores highest
+    head(10) #Get the top ten
+```
+A relatively simple hypothesis can be put forth for Tunisia's dramatic drop in score over the period: the country erupted into massive protests, kicking off the 'Arab Spring', which was met with a brutal crackdown by the Tunisian state, restrictions on civil liberties, and other measures relevant to the PR and CL scores. 
+
+### 3
+
+To compute the measures of central tendancy for our variables, we can either use the summarize() function (if we want to make a table) or, better, the summary() function (if we just want the results).
+
+```{r}
+summary(CountryYrData$PR)
+summary(CountryYrData$CL)
+```
+
+The median PR score is 4.000 and the mean PR score is 3.732. The median CL score is also 4.000, and the mean CL score is 3.687.
+
+For the measures of variability, we can use a nifty package from Northwestern University (psych) called describe(). 
+
+```{r}
+describe(CountryYrData$PR)
+describe(CountryYrData$CL)
+```
+
+This gives us a standard deviation of 2.23 for the PR scores and of 1.95 for the CL scores. The corresponding variances are 4.97 and 3.80. 
+
+From summary(), the 1st quartile for the PR scores is at 1.000, and the third at 6.000. This gives us an IQR of 5.000. The minimum value is 1.000 and the maximum value is 7.000. 
+
+The 1st quartile for the CL scores is at 2.000, and the third at 5.000. This gives us an IQR of 3.000. The minimum value is 1.000 and the maximum value is 7.000. 
+
+To plot the distributions, we can use the following code:
+
+```{r}
+ggplot(data = CountryYrData, mapping = aes(y = PR)) +
+  geom_boxplot()
+
+ggplot(data = CountryYrData, mapping = aes(y = CL)) +
+  geom_boxplot()
+```
+
+To plot as histograms:
+
+```{r}
+ggplot(data = CountryYrData, mapping = aes(x = PR)) +
+  geom_histogram(binwidth = .5) +
+  labs(title = "Distribution of PR Scores",
+       x = "PR Score",
+       y = "Count")
+
+ggplot(data = CountryYrData, mapping = aes(x = CL)) +
+  geom_histogram(binwidth = .5) +
+  labs(title = "Distribution of CL Scores",
+       x = "CL Score",
+       y = "Count")
+```
+
+To visualize changes in the PR and CL scores over time with box plots, we use the following code:
+
+```{r}
+CountryYrData %>% 
+  ggplot(mapping = aes(x = Year, y = PR)) +
+    geom_boxplot() +
+    labs(title = "PR Scores 1973-2019",
+      x = "Year",
+      y = "PR") +
+    coord_flip()
+```
+If we'd prefer to see the data in a grid of histograms (for whatever reason), the following code can do that:
+
+```{r}
+CountryYrData %>% 
+  ggplot(mapping = aes(x = PR)) +
+    geom_histogram() +
+    labs(title = "PR Scores 1973-2019",
+      x = "PR") + 
+    facet_wrap(~Year)
+
+CountryYrData %>% 
+  ggplot(mapping = aes(x = CL)) +
+    geom_histogram() +
+    labs(title = "CL Scores 1973-2019",
+      x = "CL") + 
+    facet_wrap(~Year)
+```
+
+### 4
+
+Freedom House uses a numeric metric for freedom which is constructed additively from scored questions in several subcategories. They then classify each country based upon their summed scores as either 'free', 'partly free', or 'not free' depending on which threshold they meet. Sadly, they do not disclose why they chose the cutoffs they did (or at least, I couldn't find an explanation -- only the statement of the cutoffs). Without further explanation, the thresholds seem quite arbitrary.
+
+Indeed, Freedom House nods to this in their methodology section, 'Status Characteristics', in which they explain that two countries within the same bin (free, partly free, not free) can have "quite different human rights situations". As such, this probably calls for a more fine-grained taxonomy than the one they have been using.
+
+Then again, the somewhat ad-hoc methodology may not be too surprising when we recall that Freedom House was started by Eleanor Roosevelt as, essentially, a propaganda organization meant to advance American liberal ideology globally. 
+
+## Amazon MTurk
+
+From what I have read online, including from Professor Susan Fiske at Princeton, MTurk surveys are demographically more representative of the United States population than surveys of undergraduates. Nevertheless, there are concerns that MTurkers tend to be young and well-educated as well, and so might be closer to the undergraduate demographic than once thought. These are empirical questions that I am not yet equipped to parse out. Methodologically, I am concerned that high-volume low-wage positions like those offered through MTurk could lead to diminished response quality, given that these positions incentivize participating in as many surveys as possible in the shortest period of time.
+
+Ethically, I am not sure how to evaluate MTurk. As above, I would need to know more about the demographic makeup of consistent MTurk respondents -- where they live, what wage they make, what the cost of living is in their locale, what immediate alternatives to MTurk exist for employment, and so on. I am not *a priori* opposed to people who want to work from home answering interesting survey batteries from researchers. Given Amazon's history of treating its workers like chattel, however, I am suspicious and would therefore want to learn more before using the service professionally in a research context. 
